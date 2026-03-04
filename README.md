@@ -1,6 +1,6 @@
 # 사내 데이터 관리 웹 (Django + PostgreSQL)
 
-좋아요. 웹 부분을 **Django** 기반으로 바꿨습니다.
+요청하신 대로 웹 부분은 **Django**로 구성했습니다.
 엑셀의 한계를 대체하기 위해, 회사 사용자가 로그인 후 데이터 입력/조회/수정/삭제를 할 수 있는 서버 렌더링 웹 앱입니다.
 
 ## 주요 기능
@@ -9,7 +9,8 @@
 - 데이터 조회 시 정렬/필터링
   - 정렬: 등록일, 금액, 제목, 카테고리
   - 필터: 카테고리, 검색어, 최소/최대 금액
-- PostgreSQL 연동
+- PostgreSQL 연동 (운영)
+- SQLite 모드 지원 (개발/테스트)
 
 ## 기술 스택
 - Django 5
@@ -28,6 +29,17 @@ python manage.py runserver
 ```
 
 접속: `http://127.0.0.1:8000`
+
+## 로컬 테스트용 SQLite
+PostgreSQL이 없는 환경에서는 `.env`에 아래 값을 추가해 실행할 수 있습니다.
+```env
+USE_SQLITE=True
+```
+
+## 테스트
+```bash
+USE_SQLITE=True python manage.py test
+```
 
 ## URL
 - `/accounts/login/` : 로그인
