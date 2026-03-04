@@ -41,6 +41,22 @@ USE_SQLITE=True
 USE_SQLITE=True python manage.py test
 ```
 
+## Windows에서 migrate 시 인코딩/연결 오류가 날 때
+아래를 순서대로 점검하세요.
+
+1. `.env` 파일을 **UTF-8(권장: UTF-8 with BOM)** 으로 저장
+2. 비밀번호에 특수문자가 있으면 `DATABASE_URL`에는 URL 인코딩해서 입력
+3. `.env`에 `PGCLIENTENCODING=UTF8` 설정
+4. PostgreSQL 접속 확인 후 재실행
+
+예시:
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/company_data
+PGCLIENTENCODING=UTF8
+```
+
+> 참고: `staticfiles.W004` 경고는 `static/` 폴더가 없을 때 발생합니다. 본 프로젝트에는 기본 `static/` 폴더가 포함되어 있습니다.
+
 ## URL
 - `/accounts/login/` : 로그인
 - `/accounts/logout/` : 로그아웃
