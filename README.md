@@ -49,6 +49,19 @@ USE_SQLITE=True python manage.py test
 3. `.env`에 `PGCLIENTENCODING=UTF8` 설정
 4. PostgreSQL 접속 확인 후 재실행
 
+
+추가 우회 방법(Windows 인코딩 충돌 시):
+```env
+# 비밀번호를 UTF-8 기준 Base64로 저장
+POSTGRES_PASSWORD_B64=
+```
+
+예) 비밀번호가 `비밀번호123!`일 때 (Python):
+```python
+import base64
+print(base64.b64encode("비밀번호123!".encode("utf-8")).decode())
+```
+
 예시:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/company_data

@@ -1,3 +1,4 @@
+import base64
 import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -18,41 +19,58 @@ def load_env_file() -> None:
         load_dotenv(env_path, encoding='cp949', override=False)
 
 
+def clean_env(name: str, default: str = '') -> str:
+    value = os.getenv(name, default)
+    if value is None:
+        return default
+    cleaned = value.strip().strip('"').strip("'")
+    return cleaned.lstrip('\ufeff')
+
+
+def parse_password() -> str:
+    encoded = clean_env('POSTGRES_PASSWORD_B64', '')
+    if encoded:
+        return base64.b64decode(encoded).decode('utf-8')
+    return clean_env('POSTGRES_PASSWORD', 'postgres')
+
+
 def postgres_database_config() -> dict:
-    database_url = os.getenv('DATABASE_URL', '').strip()
+    database_url = clean_env('DATABASE_URL', '')
     if database_url:
         parsed = urlparse(database_url)
         return {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': parsed.path.lstrip('/') or 'company_data',
+            'NAME': unquote(parsed.path.lstrip('/')) or 'company_data',
             'USER': unquote(parsed.username or 'postgres'),
             'PASSWORD': unquote(parsed.password or 'postgres'),
             'HOST': parsed.hostname or 'localhost',
             'PORT': str(parsed.port or '5432'),
             'OPTIONS': {
-                'client_encoding': os.getenv('PGCLIENTENCODING', 'UTF8'),
+                'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
+                'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
             },
         }
 
     return {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'company_data'),
-        'USER': os.getenv('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'NAME': clean_env('POSTGRES_DB', 'company_data'),
+        'USER': clean_env('POSTGRES_USER', 'postgres'),
+        'PASSWORD': parse_password(),
+        'HOST': clean_env('POSTGRES_HOST', 'localhost'),
+        'PORT': clean_env('POSTGRES_PORT', '5432'),
         'OPTIONS': {
-            'client_encoding': os.getenv('PGCLIENTENCODING', 'UTF8'),
+            'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
+            'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
         },
     }
 
 
 load_env_file()
-os.environ.setdefault('PGCLIENTENCODING', os.getenv('PGCLIENTENCODING', 'UTF8'))
+os.environ.setdefault('PGCLIENTENCODING', clean_env('PGCLIENTENCODING', 'UTF8'))
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me-in-production')
-DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if h.strip()]
+SECRET_KEY = clean_env('DJANGO_SECRET_KEY', 'change-me-in-production')
+DEBUG = clean_env('DJANGO_DEBUG', 'True').lower() == 'true'
+ALLOWED_HOSTS = [h.strip() for h in clean_env('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -93,7 +111,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+if clean_env('USE_SQLITE', 'False').lower() == 'true':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
