@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -41,9 +43,26 @@ def dashboard(request):
     allowed_sort = {'created_at', 'amount', 'title', 'category'}
     if sort_by not in allowed_sort:
         sort_by = 'created_at'
+    if sort_order not in {'asc', 'desc'}:
+        sort_order = 'desc'
 
     ordering = f'-{sort_by}' if sort_order == 'desc' else sort_by
     records = records.order_by(ordering)
+
+    base_params = {}
+    if category:
+        base_params['category'] = category
+    if keyword:
+        base_params['q'] = keyword
+    if min_amount:
+        base_params['min_amount'] = min_amount
+    if max_amount:
+        base_params['max_amount'] = max_amount
+
+    def make_sort_query(column: str) -> str:
+        next_order = 'asc' if sort_by != column or sort_order == 'desc' else 'desc'
+        params = {**base_params, 'sort_by': column, 'sort_order': next_order}
+        return urlencode(params)
 
     context = {
         'form': form,
@@ -55,6 +74,12 @@ def dashboard(request):
             'max_amount': max_amount,
             'sort_by': sort_by,
             'sort_order': sort_order,
+        },
+        'sort_links': {
+            'title': make_sort_query('title'),
+            'category': make_sort_query('category'),
+            'amount': make_sort_query('amount'),
+            'created_at': make_sort_query('created_at'),
         },
     }
     return render(request, 'records/dashboard.html', context)
