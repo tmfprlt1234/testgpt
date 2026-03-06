@@ -49,6 +49,8 @@ USE_SQLITE=True python manage.py test
 3. `.env`에 `PGCLIENTENCODING=UTF8` 설정
 4. PostgreSQL 접속 확인 후 재실행
 
+5. PowerShell/cmd에 이전에 설정된 `PGPASSWORD`, `PGUSER`, `PGHOST` 같은 `PG*` 환경변수가 있다면 제거 후 재실행
+
 
 추가 우회 방법(Windows 인코딩 충돌 시):
 ```env
@@ -66,6 +68,7 @@ print(base64.b64encode("비밀번호123!".encode("utf-8")).decode())
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/company_data
 PGCLIENTENCODING=UTF8
+POSTGRES_OPTIONS=-c client_encoding=UTF8
 ```
 
 > 참고: `staticfiles.W004` 경고는 `static/` 폴더가 없을 때 발생합니다. 본 프로젝트에는 기본 `static/` 폴더가 포함되어 있습니다.

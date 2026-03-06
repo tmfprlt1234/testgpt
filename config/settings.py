@@ -8,6 +8,21 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+PG_ENV_KEYS = [
+    'PGDATABASE',
+    'PGHOST',
+    'PGHOSTADDR',
+    'PGPORT',
+    'PGUSER',
+    'PGPASSWORD',
+    'PGPASSFILE',
+    'PGSERVICE',
+    'PGSERVICEFILE',
+    'PGOPTIONS',
+    'PGSSLMODE',
+]
+
+
 def load_env_file() -> None:
     env_path = BASE_DIR / '.env'
     if not env_path.exists():
@@ -34,6 +49,15 @@ def parse_password() -> str:
     return clean_env('POSTGRES_PASSWORD', 'postgres')
 
 
+def clear_conflicting_pg_env() -> None:
+    """Avoid libpq using unexpected system-level PG* variables on Windows shells."""
+    for key in PG_ENV_KEYS:
+        if key == 'PGCLIENTENCODING':
+            continue
+        if key in os.environ:
+            os.environ.pop(key, None)
+
+
 def postgres_database_config() -> dict:
     database_url = clean_env('DATABASE_URL', '')
     if database_url:
@@ -48,6 +72,7 @@ def postgres_database_config() -> dict:
             'OPTIONS': {
                 'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
                 'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
+                'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
             },
         }
 
@@ -61,12 +86,14 @@ def postgres_database_config() -> dict:
         'OPTIONS': {
             'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
             'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
+            'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
         },
     }
 
 
 load_env_file()
 os.environ.setdefault('PGCLIENTENCODING', clean_env('PGCLIENTENCODING', 'UTF8'))
+clear_conflicting_pg_env()
 
 SECRET_KEY = clean_env('DJANGO_SECRET_KEY', 'change-me-in-production')
 DEBUG = clean_env('DJANGO_DEBUG', 'True').lower() == 'true'
