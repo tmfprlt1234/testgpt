@@ -58,6 +58,31 @@ def clear_conflicting_pg_env() -> None:
             os.environ.pop(key, None)
 
 
+def postgres_database_options() -> dict:
+    options = {
+        'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
+        'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
+        'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
+    }
+
+    # Explicitly ignore libpq service/passfile defaults unless user opts in.
+    if clean_env('POSTGRES_DISABLE_PGSERVICE', 'True').lower() == 'true':
+        options['service'] = ''
+    else:
+        service = clean_env('POSTGRES_SERVICE', '')
+        if service:
+            options['service'] = service
+
+    if clean_env('POSTGRES_DISABLE_PGPASSFILE', 'True').lower() == 'true':
+        options['passfile'] = ''
+    else:
+        passfile = clean_env('POSTGRES_PASSFILE', '')
+        if passfile:
+            options['passfile'] = passfile
+
+    return options
+
+
 def postgres_database_config() -> dict:
     database_url = clean_env('DATABASE_URL', '')
     if database_url:
@@ -69,11 +94,7 @@ def postgres_database_config() -> dict:
             'PASSWORD': unquote(parsed.password or 'postgres'),
             'HOST': parsed.hostname or 'localhost',
             'PORT': str(parsed.port or '5432'),
-            'OPTIONS': {
-                'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
-                'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
-                'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
-            },
+            'OPTIONS': postgres_database_options(),
         }
 
     return {
@@ -83,11 +104,7 @@ def postgres_database_config() -> dict:
         'PASSWORD': parse_password(),
         'HOST': clean_env('POSTGRES_HOST', 'localhost'),
         'PORT': clean_env('POSTGRES_PORT', '5432'),
-        'OPTIONS': {
-            'client_encoding': clean_env('PGCLIENTENCODING', 'UTF8'),
-            'connect_timeout': int(clean_env('POSTGRES_CONNECT_TIMEOUT', '10')),
-            'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
-        },
+        'OPTIONS': postgres_database_options(),
     }
 
 

@@ -50,6 +50,7 @@ USE_SQLITE=True python manage.py test
 4. PostgreSQL 접속 확인 후 재실행
 
 5. PowerShell/cmd에 이전에 설정된 `PGPASSWORD`, `PGUSER`, `PGHOST` 같은 `PG*` 환경변수가 있다면 제거 후 재실행
+6. `%APPDATA%\postgresql\pgpass.conf` 또는 서비스 설정(`PGSERVICE`)이 깨져있다면 임시로 비활성화
 
 
 추가 우회 방법(Windows 인코딩 충돌 시):
@@ -69,6 +70,8 @@ print(base64.b64encode("비밀번호123!".encode("utf-8")).decode())
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/company_data
 PGCLIENTENCODING=UTF8
 POSTGRES_OPTIONS=-c client_encoding=UTF8
+POSTGRES_DISABLE_PGSERVICE=True
+POSTGRES_DISABLE_PGPASSFILE=True
 ```
 
 > 참고: `staticfiles.W004` 경고는 `static/` 폴더가 없을 때 발생합니다. 본 프로젝트에는 기본 `static/` 폴더가 포함되어 있습니다.
