@@ -151,7 +151,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-if clean_env('USE_SQLITE', 'False').lower() == 'true':
+use_sqlite = clean_env('USE_SQLITE', 'True').lower() == 'true'
+use_postgres = clean_env('USE_POSTGRES', 'False').lower() == 'true'
+
+if use_sqlite or not use_postgres:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

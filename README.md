@@ -30,10 +30,22 @@ python manage.py runserver
 
 접속: `http://127.0.0.1:8000`
 
-## 로컬 테스트용 SQLite
-PostgreSQL이 없는 환경에서는 `.env`에 아래 값을 추가해 실행할 수 있습니다.
+> 기본 설정은 SQLite(`USE_SQLITE=True`, `USE_POSTGRES=False`)라서 `.env.example` 복사 직후에도 `migrate`가 바로 동작합니다.
+
+## 로컬 기본 실행(SQLite)
+아무 설정을 바꾸지 않으면 SQLite로 실행됩니다.
 ```env
 USE_SQLITE=True
+USE_POSTGRES=False
+```
+
+
+## PostgreSQL로 실행
+`.env`에서 아래처럼 바꾼 뒤 실행하세요.
+```env
+USE_SQLITE=False
+USE_POSTGRES=True
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/company_data
 ```
 
 ## 테스트
