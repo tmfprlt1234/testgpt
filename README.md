@@ -51,6 +51,7 @@ USE_SQLITE=True python manage.py test
 
 5. PowerShell/cmd에 이전에 설정된 `PGPASSWORD`, `PGUSER`, `PGHOST` 같은 `PG*` 환경변수가 있다면 제거 후 재실행
 6. `%APPDATA%\postgresql\pgpass.conf` 또는 서비스 설정(`PGSERVICE`)이 깨져있다면 임시로 비활성화
+   - `POSTGRES_SERVICE`, `POSTGRES_PASSFILE`은 빈 문자열(`""`)로 두지 말고 완전히 비워두거나(미설정), 실제 값만 입력
 
 
 추가 우회 방법(Windows 인코딩 충돌 시):

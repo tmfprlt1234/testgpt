@@ -65,17 +65,13 @@ def postgres_database_options() -> dict:
         'options': clean_env('POSTGRES_OPTIONS', '-c client_encoding=UTF8'),
     }
 
-    # Explicitly ignore libpq service/passfile defaults unless user opts in.
-    if clean_env('POSTGRES_DISABLE_PGSERVICE', 'True').lower() == 'true':
-        options['service'] = ''
-    else:
+    # Only pass service/passfile when explicitly enabled and non-empty.
+    if clean_env('POSTGRES_DISABLE_PGSERVICE', 'True').lower() != 'true':
         service = clean_env('POSTGRES_SERVICE', '')
         if service:
             options['service'] = service
 
-    if clean_env('POSTGRES_DISABLE_PGPASSFILE', 'True').lower() == 'true':
-        options['passfile'] = ''
-    else:
+    if clean_env('POSTGRES_DISABLE_PGPASSFILE', 'True').lower() != 'true':
         passfile = clean_env('POSTGRES_PASSFILE', '')
         if passfile:
             options['passfile'] = passfile
